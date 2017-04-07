@@ -1,0 +1,48 @@
+<html>
+<head>
+<title>WebCam Access</title>
+<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery.webcam.min.js"></script>
+
+</head>
+
+<body>
+<video autoplay></video> 
+
+<div id="webcam"></div>
+<p><a href="javascript:webcam.capture();void(0);">Smile!</a></p>
+<script type="text/javascript">
+jQuery("#webcam").webcam({
+	width: 320,
+	height: 240,
+	mode: "callback",
+	swffile: "jscam.swf",
+});
+</script>
+
+<form><input type='button' id='capture' value="Smile!"/></form> 
+
+<canvas id='canvas' width='300' height='250'></canvas>
+
+<script language='javascript'> 
+document.getElementById('capture').onclick = function() { 
+    var video = document.querySelector('video'); 
+    var canvas = document.getElementById('canvas');
+	var ctx = canvas.getContext('2d'); 
+	ctx.drawImage(video,0,0,300,250);
+	
+	var data = ctx.getImageData(0,0,canvas.width,canvas.height); 
+	
+	for(n=0; n<data.width*data.height; n++) {  
+        var index = n*4;   
+        data.data[index+0] = 255-data.data[index+0];  
+        data.data[index+1] = 255-data.data[index+1];  
+        data.data[index+2] = 255-data.data[index+2];
+    } 
+	ctx.putImageData(data,0,0);  
+} 
+</script>  
+ 
+<script src="libs/webcamera.js"></script>
+</body>
+</html>

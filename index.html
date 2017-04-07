@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<title>MyoWebToolkit</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/stylefile.css">
+</head>
+<body>
+
+
+<!-- All javascript libraries are included in the header.html -->    
+<link rel="import" href="indexHeader.html">
+    
+<!-- All 3d loaded here -->
+<div id="container"></div>
+
+<script>
+    $( function() {
+        $( "#my-gui-container" ).draggable();
+    } );
+</script>
+
+
+<!--
+<div id="legal">Muscles and Bones are part of: "BodyParts3D, © The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan.", <a href="http://lifesciencedb.jp/bp3d/">http://lifesciencedb.jp/bp3d/</a></div>
+-->
+
+<!-- Myo graphs -->
+<div id='pod0' class='pod1' style=''>Pod 1</div>
+<div id='pod1' class='pod2' style=''>Pod 2</div>
+<div id='pod2' class='pod3' style=''>Pod 3</div>
+<div id='pod3' class='pod4' style=''>Pod 4</div>
+<div id='pod4' class='pod5' style=''>Pod 5</div>
+<div id='pod5' class='pod6' style=''>Pod 6</div>
+<div id='pod6' class='pod7' style=''>Pod 7</div>
+<div id='pod7' class='pod8' style=''>Pod 8</div>
+    
+<!-- DatGUI -->    
+<div id="my-gui-container" draggable=true></div>
+    
+<div id="infophp">    
+    <div id="progress">
+        <span id="message">Intersecting ...</span>
+
+
+            <div id="progressbar" class="shadow">
+                <div id="bar" class="shadow" style="width:0px"></div>
+            </div>
+
+    </div>        
+    
+    <div class="result"></div>
+    <div class="result2"></div>
+            
+    <div id="result_download"></div>
+</div>
+
+<div id="toggleMyoButton">
+    <button onclick='
+            if (this.value == "OFF") {
+                this.value = "ON";
+                Myo.connect();
+                this.innerHTML = "Myo Off";
+            } else {
+                this.value = "OFF";
+                this.innerHTML = "Myo On";
+                Myo.disconnect();
+            }'>
+        Toggle Myo sensor on/off </button>
+</div>
+
+<div id="togglePhysicsButton">
+    <button onclick='
+            if (this.value == "OFF") {
+                this.value = "ON";
+
+                this.innerHTML = "Physics Off";
+                isPhysicsPaused = false;
+                scene.onSimulationResume();
+                startPhysics();
+            } else {
+                this.value = "OFF";
+                this.innerHTML = "Physics On";
+                isPhysicsPaused = true;
+                scene.removeEventListener("update", updPh);
+            }'>
+        Toggle Physics on/off </button>
+</div>
+
+
+
+<!-- Video Camera -->    
+<video autoplay></video>    
+
+<script>
+
+var isPhysicsPaused = false;
+
+//======== Muscle Activity =================================
+var muscleActivity = new Array(15).fill(0);
+
+//================== ENVIRONMENTALS 3D ===================
+var myEnv = new Enviromentals();
+
+
+//======================== FORCES ==========================
+// ---- EXTENSION FORCES -------
+var extensorsGroup = new ExtensorsGroup();
+
+//  --- FLEX FORCES ---
+var flexGroup = new FlexorsGroup();
+
+//------ DEV FORCES ---------------
+var deviatorsGroup = new DeviatorsGroup();
+
+//------ DEV FORCES ---------------
+var pronatorsSupinatorsGroup = new PronatorsSupinatorsGroup();
+
+var activLevel_FingersFlex = 0;
+var activLevel_FingersExtent = 0;
+
+var activLevel_FingersSmExt = 0;
+
+var activLevel_CarpiFlex = 0;
+var activLevel_CarpiExtent = 0;
+var activLevel_UlnarDeviation = 0;
+var activLevel_RadialDeviation = 0;
+var activLevel_Pronation = 0;
+var activLevel_Supination = 0;
+
+
+var sign = -1;
+
+var stopFlag = false;
+
+// --------------
+var start = null;
+var timestamp = performance.now();
+var cachedMuscles = true;
+var frameDelta = 0;
+var clock = new THREE.Clock();
+
+// Bones and Muscles from MuscleBonesPath.js
+var musclesBonesConstraints = new MuscleBonesConstraints();
+
+
+var myModelBones = StorageData.getBonesFNs();
+var myModelMuscles = StorageData.getMusclesFNs();
+var nMuscles = myModelMuscles.length;     
+var nBones = myModelBones.length;         
+var myoMusclesWeightsMatrix = [];    
+    
+//-----------------------  MAIN ---------------------------------
+
+    
+var spriteLabelMuscles = new Array(nMuscles);        
+    
+var colors = randomColors(nMuscles);
+var mshColor = new Array(nMuscles);
+    
+for (var i = 0; i < nMuscles; i++)  
+    mshColor[i] = new THREE.MeshLambertMaterial({color: colors[i], transparent: true, opacity: 0.8,  side: THREE.DoubleSide});
+
+    
+var meshSkinnedBone = [];    
+
+var container, scene, camera, renderer, controls, render_stats, physics_stats, ground, render;
+var hanger;
+    
+
+var rbonesObjs = [];
+var rbonesBoxes = [];
+var arm_group = new THREE.Object3D();    
+var rotation_matrix;    
+
+// Muscles positions    
+var musclesInterCentroidsGlobal = new Array(nMuscles);
+
+// Muscles volumes 
+var musclesInterVolumeGlobal = new Array(nMuscles);    
+    
+// Myo positions   
+var myoPositionsGlobal = new Array(nMuscles);    
+
+var id_animation_frame;     
+
+var M_PI = Math.PI;
+
+    
+//------------------- DATGUI ---------------------------
+// Init gui controls variables
+var gui_controls = new function(){
+    for (var i = 0; i < nMuscles; i++)
+        eval('this.muscle_activation_'+i+'= 1'); 
+};
+    
+// GUI controls
+var gui = new dat.GUI( {autoPlace: false} );
+//gui.close();
+
+// Video control    
+var video_stream_open = {open:false};
+var show_video_controller = gui.add( video_stream_open, "open" );
+show_video_controller.name( "Show Video" );
+setOnOffCameraSwitch(show_video_controller);
+    
+// Muscles folder    
+var folderMuscles = gui.addFolder( "Muscles" );
+folderMuscles.open();
+
+// Put it    
+var customContainer = document.getElementById('my-gui-container');
+customContainer.appendChild(gui.domElement);
+
+var dg_controller = new Array(nMuscles);
+
+//------- INITIALIZATION FUNCTION  -------------------------------
+function init() 
+{
+    // Enviromentals.js
+    scene = myEnv.setScene(scene);
+    
+    camera = myEnv.setCamera(camera);
+    scene.add(camera);
+	    
+	renderer = myEnv.setRenderer(renderer);
+
+	container = document.getElementById( 'container' );
+	container.appendChild( renderer.domElement );
+
+    // Events
+	THREEx.WindowResize(renderer, camera);
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) }); 	// toggle full-screen on given key press
+		
+	// CONTROLS 
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.target.set(500, 500, 1000); // REM
+    //controls.target.set(130, -80, 500); // REM
+
+	// Statistics rendering
+    myEnv.setStats(container);
+
+    // LIGHTs
+    var light = myEnv.makeLights(0, 1000, 0, 1);
+    scene.add(light);
+    //scene.add(makeLightHelper(light));
+    
+    var lightB = myEnv.makeLights(0, - 1200, 0, 1);
+    scene.add(lightB);
+
+
+    var lightC = myEnv.makeLights(100, 400, 2500, 0.3);
+    scene.add(lightC);
+
+    //scene.add(makeLightHelper(lightC));
+    
+    // Information GUI
+    //$("#progress").get(0).style.display = "block";
+
+    // ---- Green ground -----
+    //ground = myEnv.setGround(ground);
+    //scene.add( ground );
+
+	//-------------  BOX GEOMETRY for Volume intersection -------------
+    //crossBoxBSP = makeCrossBox();
+
+    // ========= Load Manager Bones ======================
+    var managerBones = new THREE.LoadingManager();
+    var managerMuscles = new THREE.LoadingManager();
+
+    managerBones.onProgress = function ( item, loaded, total ) {
+
+//        var percentComplete = loaded / total * 100;
+//        var bar =  $("#progressbar").get(0).offsetWidth;
+//        bar = Math.floor( bar * loaded / total );
+//        $("#bar").get(0).style.width = bar + "px";
+        $(".result").get(0).innerHTML = "Estimated: " + loaded + " / " + total + ' Bones';
+        //console.log(" Manager:" + Math.round(percentComplete, 2) + '% downloaded' );
+    };
+
+
+
+
+    managerMuscles.onProgress = function ( item, loaded, total ) {
+          $(".result2").get(0).innerHTML = "Estimated: " + loaded + " / " + total + ' Muscles';
+    };
+
+    var loaderMuscles = new THREE.OBJLoader( managerMuscles );
+
+    managerBones.onLoad = function (){
+
+        // Relate bones with each other and add to scene
+        musclesBonesConstraints.loadBoneConstraints();
+
+        // Load Myo Pods and its annotation labels
+        musclesBonesConstraints.loadMyoPods();
+
+        // Load async Muscles to
+        musclesBonesConstraints.asyncLoadMuscles(loaderMuscles, nMuscles, myModelMuscles);
+    };
+
+    var loaderBones = new THREE.OBJLoader( managerBones );
+
+
+
+    // OnLoad: execute after everything is loaded 
+    managerMuscles.onLoad = function (){
+        
+        //$("#message").get(0).innerHTML = "Completed";
+        $("#infophp").get(0).style.display = "none";
+
+        nMuscles = Object.keys(musclesInterVolumeGlobal).length;
+
+        // Iterate over all muscles
+        for (var i = 0; i < nMuscles; i++){ //
+
+            var muscleName = StorageData.getMuscleShortNames()[i];
+            var muscleDistArr = [];
+
+
+            // Calculate distances of MyoPods to Muscles
+            for (var j = 0; j < musclesBonesConstraints.nPods; j++){ //
+
+                //--------- Distance --------------------------------
+                var distVec = new THREE.Vector3();
+                distVec.subVectors(musclesBonesConstraints.myoPodPositions[j], musclesInterCentroidsGlobal[muscleName]);
+                var dist = Math.sqrt(distVec.x*distVec.x + distVec.y*distVec.y + distVec.z*distVec.z);
+
+//                console.log("Pod:", j, "Muscle:", muscleName, "dist:", dist);
+
+                //var coef = Math.round(1 / dist / dist*100)/100;
+                var coef = musclesInterVolumeGlobal[muscleName] / dist;
+
+                //console.log("Myo:", (j+1), "MUSCLE:", muscleName, "COEF:", coef);
+
+                muscleDistArr.push(coef);
+            }
+
+            //console.log(muscleName, muscleDistArr);
+            myoMusclesWeightsMatrix.push(muscleDistArr);
+
+            //-------------------- DATGUI Listen  -------------------------------
+            dg_controller[i] = folderMuscles.add( gui_controls, "muscle_activation_"+i, 0, 15, 1).name(muscleName).listen();
+
+            //------------- on Dat.GUI changes then change muscles colors ------------
+            // When gui values changes then stop animating else won't be able to type with keyboard
+            dg_controller[i].onChange(function(value) {
+//                    cancelAnimationFrame( id_animation_frame );
+
+                    var str = this.domElement.parentElement.outerText;
+                    var mname = str.substring(0, str.length- 2);
+
+                    var strName = "outline_"+mname;
+                    var myMuscle = scene.getObjectByName( strName  );
+
+                    if (typeof myMuscle != 'undefined'){
+                        myMuscle.material = new THREE.MeshBasicMaterial( { color:  new THREE.Color(value/50, 0, 0), side: THREE.BackSide } );
+                    }
+
+                    var p = StorageData.fmuscle(mname);
+                    muscleActivity[p] = value;
+
+//                    /animatize(timestamp);
+                }
+            );
+        }
+
+
+
+
+//        console.log(myoMusclesWeightsMatrix);
+
+        // --- Normalize rows of alpha ---
+        // Left Hand
+        var weightsLeft = numeric.transpose(myoMusclesWeightsMatrix);
+
+
+
+
+//        // weightsRight Estimation
+//        var weightsRight = [weightsLeft[6], weightsLeft[5], weightsLeft[4], weightsLeft[3],
+//                                                   weightsLeft[0], weightsLeft[1], weightsLeft[2], weightsLeft[7]];
+//
+//
+////        console.log(weightsRight);
+////
+////        console.log("[");
+////        for (var i = 0; i<8; i++)
+////            console.log("[" + weightsRight[i] + "]");
+////        console.log("]");
+//
+//
+//
+//        // Old approach
+        var weightsNormLeft = normalizeRows(myoMusclesWeightsMatrix, nMuscles);
+
+////        // -- Mirrorize for Right Hand ------
+////        var weightsNormRight = [];
+////
+////        for (var i = 0; i < nMuscles; i++){ //
+////            var muscleName = StorageData.getMuscleShortNames()[i];
+////
+////            // 0 <-> 6
+////            // 1 <-> 5
+////            // 2 <-> 4
+////
+////            //console.log("LEFT HAND", muscleName, weightsNormLeft[i]);
+////
+////
+////            var rightTransW = [weightsNormLeft[i][6], weightsNormLeft[i][5], weightsNormLeft[i][4], weightsNormLeft[i][3],
+////                                                   weightsNormLeft[i][0], weightsNormLeft[i][1], weightsNormLeft[i][2], weightsNormLeft[i][7]];
+////
+////            // "Right hand"
+////            //console.log(muscleName, rightTransW);
+////
+////            weightsNormRight.push(rightTransW);
+////        }
+//
+//        //-----------------------------------
+
+        //console.log(weightsNormLeft);
+
+        var mcoefs = numeric.transpose(weightsNormLeft);
+        var my_nnls = new pcnnls(weightsNormLeft);
+
+        MyoActivationFunctions(musclesBonesConstraints.nPods, mcoefs, my_nnls);
+
+        animatize(timestamp);
+
+        startPhysics();
+
+        //============= Force Visualizers ======================
+//        extensorsGroup.addExtensorsToScene(scene);
+//        flexGroup.addFlexorsToScene(scene);
+//        deviatorsGroup.addDeviatorsToScene(scene);
+//        pronatorsSupinatorsGroup.addSupinatorsPronatorsToScene(scene);
+
+
+    }; // End of manager
+        
+    //============ Load Bones ====================
+
+    // Load async Bones to ->>> rbonesObjs[i]
+    musclesBonesConstraints.asyncLoadBones(loaderBones, nBones, myModelBones);
+
+}
+
+// ---- start --------
+
+updPh = function () {
+    if (!isPhysicsPaused) {
+        applyForce();
+        scene.simulate(undefined, 1);
+        physics_stats.update();
+    }
+}
+
+function startPhysics() {
+    scene.simulate();
+    controls.update();
+    physics_stats.update();
+
+    scene.addEventListener('update', updPh);
+}
+
+
+
+
+
+function renderdelayed(){
+
+    setTimeout( function() {
+        id_animation_frame = requestAnimationFrame( animatize );
+    }, 1000 / 25 );
+
+}
+
+function animatize() 
+{
+    renderdelayed();
+
+    //=================
+
+
+    //================
+    renderer.render( scene, camera );
+    render_stats.update();
+}
+
+
+// Apply force every iteration
+applyForce = function() {
+
+
+    // ToDo: Quaternions gyro move
+    // ToDo: Optimize computational resources
+
+
+    // 0 'brachioradialis',                 // Supinate@pronationState // Pronate@supinationState // Flex Elbow
+    // 1 'Hum. hea. lef. pro. ter.',        // Pronate@any
+    // 2 'Uln. hea. lef. pro. ter.',        // Pronate@any
+    // 3 'ext. car. rad. lon.',             // ExtentCarpi@any // RadialDeviate@any
+    // 4 'supinator',                       // Supinate@any
+
+    // 5 'ext. car. rad. bre.',             // ExtentCarpi@any
+    // 6 'ext. dig.',                       // ExtentCarpi@any // ExtentFingers@any
+    // 7 'ext. dig. min.',                  // ExtentCarpi@any // ExtentLittleFinger@any
+    // 8 'ext. car. uln.',                  // ExtentCarpi@any // UlnarDeviate@any
+
+    // 9  'Uln. hea. lef. fle. car. uln.',  // FlexCarpi@any // UlnarDeviate@any
+    // 10 'Hum. hea. lef. fle. car. uln.',  // FlexCarpi@any // UlnarDeviate@any
+    // 11 'fle. dig. pro.',                 // FlexCarpi@any // FlexFingersDistal@any
+    // 12 'palmaris longus',                // FlexCarpi@any
+    // 13 'fle. dig. sup.',                 // FlexCarpi@any // FlexFingersMiddle@any
+    // 14 'fle. car. rad.'                  // FlexCarpi@any // RadialDeviate@any
+
+
+    activLevel_CarpiFlex = 0.002 * (0.1 * 20.1 * muscleActivity[9] + 0.1 * 25.7 * muscleActivity[10] +
+            0.1 * 3.5 * muscleActivity[11] + 0.3 * 16.8 * muscleActivity[12] +
+            0.4 * 16.2 * muscleActivity[13] + 0.4 * 20.9 * muscleActivity[14]);
+
+    activLevel_CarpiExtent = 0.001 * (0.5 * 24.6 * muscleActivity[3] + 0.2 * 20 * muscleActivity[5] +
+            0.3 * 29.8 * muscleActivity[6] + 0.3 * 7.8 * muscleActivity[7] +
+            0.6 * 10.6 * muscleActivity[8]); // bad influence from 9. uln head left fle
+
+
+
+
+    if (muscleActivity[13] > 0.7*muscleActivity[6]) {
+        activLevel_FingersFlex = 0.005 * ( 0.5 * 53.5 * muscleActivity[11] + 0.5 * 16.21 * muscleActivity[13] );
+        activLevel_FingersExtent = 0;
+    } else {
+        activLevel_FingersExtent = 0.001 * ( 0.5 * 29.8 * muscleActivity[6] + 0.5 * 7.8 * muscleActivity[7]);
+        activLevel_FingersFlex = 0;
+    }
+
+    activLevel_FingersSmExt = 0.01*0.5*7.8*muscleActivity[7];
+
+
+    activLevel_UlnarDeviation = 0.01 *(10.65*muscleActivity[8] + 20.11*muscleActivity[9] + 25.73*muscleActivity[10]);
+
+    activLevel_RadialDeviation = 0.01*( 0.5 * 24.62*muscleActivity[3] + 0.2 * 20.98*muscleActivity[14]);
+
+
+
+    activLevel_Pronation = 0.05*( 0.2 * 12.2*muscleActivity[1] + 0.2 * 5.56*muscleActivity[2]);
+
+    activLevel_Supination = 0.2*(11.22*muscleActivity[4]);
+
+
+    //------------ APPLY EXTENSION FORCES ---
+    extensorsGroup.applyForces_FingersExtent(activLevel_FingersExtent, activLevel_FingersSmExt, musclesBonesConstraints);
+
+    // --------------- FINGERS FLEXORS ------
+    flexGroup.applyForces_FingersFlex(activLevel_FingersFlex, musclesBonesConstraints);
+
+    //------------- Carpi FLEXORS -------------
+    flexGroup.applyForces_CarpiFlex(activLevel_CarpiFlex, musclesBonesConstraints);
+
+    //------------- Carpi EXTENSORS -------------
+    extensorsGroup.applyForces_CarpiExtent(activLevel_CarpiExtent, musclesBonesConstraints);
+
+    //------------ Deviator Ulna --------------
+    deviatorsGroup.applyForces_UlnarDeviation(activLevel_UlnarDeviation, musclesBonesConstraints);
+
+    //------------ Deviator Ulna --------------
+    deviatorsGroup.applyForces_RadialDeviation(activLevel_RadialDeviation, musclesBonesConstraints);
+
+    //------------- Pronation ------------------
+    pronatorsSupinatorsGroup.applyForces_Pronation(activLevel_Pronation, musclesBonesConstraints);
+
+    //------------- Supination ----------------
+    pronatorsSupinatorsGroup.applyForces_Supination(activLevel_Supination, musclesBonesConstraints);
+};
+
+window.onload = init();
+
+
+// ! Important Close Myo when closing window
+window.onbeforeunload = function() {
+    Myo.socket.close();
+    return null; //here also can be string, that will be shown to the user
+}
+
+
+</script>
+
+
+</body>
+</html>

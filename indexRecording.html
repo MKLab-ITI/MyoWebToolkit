@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MyoRecorderDB</title>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <!-- Your url goes here  -->
+  <base href="http://127.0.0.1:8080/MyoWebToolkit/" />
+
+  <link rel="stylesheet" href="css/styleRecording.css">;
+
+  <script src="libs/jquery-1.12.0.min.js"></script>
+  <script src="libs/Flot/jquery.flot.js"></script>
+
+  <script src='myo/myo.js'></script>
+  <script src='myo/imu_emg_Graphs.js'></script>
+
+
+
+
+  <script>
+      Myo.disconnect();
+
+      var socket = io();
+
+      // When emg input comes from myo send it to node js
+      Myo.on("emg", function(data){
+          // For graphs visualization
+          rawData = data;
+          // Send raw Data to Node.js
+          socket.emit("append", "EMG;" + (new Date).getTime() + ";" + data + String.fromCharCode(10));
+      }); // End of Myo.on
+
+      // When imu input comes from myo send it to node js
+      Myo.on("imu", function(quant){
+          // Send raw Data to Node.js
+          socket.emit("append", "IMU;" + (new Date).getTime() + ";" + JSON.stringify( quant) + String.fromCharCode(10) );
+      });
+  </script>
+
+
+</head>
+<body>
+  <!-- HTML -------------------------------------------- -->
+  <ul class="pages">
+
+    <li class="login page">
+      <div class="form">
+        <h3 class="title">What's your nickname?</h3>
+        <input id="usernametextfield" class="usernameInput" type="text" maxlength="14" />
+        <div id="oknamebutton" style="color:white;margin-top:20px; cursor: pointer; font-size: larger" onclick="setUsername()">OK</div>
+      </div>
+    </li>
+
+    <li class="chat page">
+
+      <div id='pod0' class='pod1' style='opacity:0.2'>Pod 1</div>
+      <div id='pod1' class='pod2' style='opacity:0.2'>Pod 2</div>
+      <div id='pod2' class='pod3' style='opacity:0.2'>Pod 3</div>
+      <div id='pod3' class='pod4' style='opacity:0.2'>Pod 4</div>
+      <div id='pod4' class='pod5' style='opacity:0.2'>Pod 5</div>
+      <div id='pod5' class='pod6' style='opacity:0.2'>Pod 6</div>
+      <div id='pod6' class='pod7' style='opacity:0.2'>Pod 7</div>
+      <div id='pod7' class='pod8' style='opacity:0.2'>Pod 8</div>
+
+
+      <div id="toggleMyoButton">
+        <button onclick='
+            if (this.value == "OFF") {
+                this.value = "ON";
+                this.innerHTML = "Myo Off";
+                Myo.connect();
+            } else {
+                this.value = "OFF";
+                this.innerHTML = "Myo On";
+                Myo.disconnect();
+            }'>
+          Toggle Myo sensor on/off </button>
+      </div>
+
+
+      <div class="infoArea">
+        <div id="texthint">Start by pressing "Next" button to see what move to do. Then press "Do & Rec". </div>
+        <div class="imagehint">
+
+          <video id="videohint" width="480" height="270" autoplay>
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+
+        </div>
+
+
+
+          <div id="back-button-triangle" onclick="gotoPrevious()">Back</div>
+          <div id="next-button-triangle" onclick="gotoNext()">Next</div>
+
+
+        <svg id="hourglass" width="100" height="100">
+          <circle id="circle1" cx="100" cy="50" r="50" fill="red"/>
+          <path style="stroke: #2c3e50; stroke-dasharray:820; stroke-dashoffset:820; stroke-width:12; fill:transparent"
+                d="
+        M 95, 54
+        m -42.5, 0
+        a 42.5,42.5 0 1,0  95,0
+        a 42.5,42.5 0 1,0 -95,0
+        ">
+
+            <!--d="-->
+            <!--M cx cy-->
+            <!--m -r, 0-->
+            <!--a r,r 0 1,0 (r * 2),0-->
+            <!--a r,r 0 1,0 -(r * 2),0-->
+            <!--"-->
+
+
+            <animate id='clockanim' attributeName="stroke-dashoffset" dur="2s" to="-820" repeatCount="0"/>
+          </path>
+        </svg>
+
+        <div class="round-button"
+             onclick="rec(); clockanim.beginElement()"
+             onmouseover=circle1.style.fill="#660000";
+             onmouseleave=circle1.style.fill="red"><a class="round-button" >Do & Rec</a></div>
+
+        </div>
+        <div class="exitbutton"></div>
+
+    </li>
+  </ul>
+
+  <script>
+    currMovement = -1;
+
+    var $window = $(window);
+    var $usernameInput = $('.usernameInput'); // Input for username
+    var $loginPage = $('.login.page');
+    var $chatPage = $('.chat.page');
+
+    // Sets the client's username
+    function setUsername () {
+      username = cleanInput($usernameInput.val().trim());
+
+      // If the username is valid
+      if (username) {
+        $loginPage.fadeOut();
+        $chatPage.show();
+        $loginPage.off('click');
+
+      }
+    }
+
+    // Prevents input from having injected markup
+    function cleanInput (input) {
+      return $('<div/>').text(input).text();
+    }
+
+
+    var allVideos = ["indexFlex1.mp4", "middleFlex1.mp4"];
+    var allTextHints = ["Flex your index finger of your left arm",
+                        "Flex your middle finger of your left arm"];
+
+    var nMoves = allVideos.length;
+
+
+    function gotoNext(){
+
+      Myo.disconnect();
+
+      console.log('Next', currMovement);
+
+      if (currMovement < nMoves-1) {
+        currMovement++;
+        document.getElementById("videohint").src = "videos/" + allVideos[currMovement];
+        document.getElementById("texthint").innerHTML = allTextHints[currMovement];
+
+        if (currMovement > 0)
+           document.getElementById('back-button-triangle').style.display ="flex";
+
+          jQuery("#circle1")[0].style.display = "flex";
+          jQuery(".round-button")[0].style.display = "block";
+      }
+    }
+
+    function gotoPrevious(){
+      Myo.disconnect();
+
+      console.log('Previous', currMovement);
+      if (currMovement > 0) {
+        currMovement--;
+        document.getElementById("videohint").src = "videos/" + allVideos[currMovement];
+        document.getElementById("texthint").innerHTML = allTextHints[currMovement];
+
+          if (currMovement < 1) {
+              document.getElementById('back-button-triangle').style.display = "none";
+
+          }
+      }
+    }
+
+    function rec(){
+      console.log('record');
+      document.getElementById("videohint").src = "videos/" + allVideos[currMovement];
+
+      socket.emit('createfile', {usr: username, action: allVideos[currMovement].split('.')[0]});
+
+
+
+
+      Myo.connect();
+
+      setInterval(
+          function(){
+                      Myo.disconnect();
+                    },
+      3000);
+    }
+
+    function initFunc() {
+        $('#usernametextfield').keypress(function(e){
+            if(e.keyCode==13) {
+                $('#oknamebutton').click();
+                console.log("initializing");
+            }
+        });
+
+    }
+
+  </script>
+
+
+  <script>
+
+      $('document').ready(initFunc());
+
+      // ! Important Close Myo when closing window
+      window.onbeforeunload = function() {
+          Myo.socket.close();
+          return null; //here also can be string, that will be shown to the user
+      }
+
+  </script>
+</body>
+</html>
