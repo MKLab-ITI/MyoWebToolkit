@@ -16,7 +16,8 @@
     
     Data Recording:
     
-    [![Data Recording Video](https://www.youtube.com/watch?v=l4TJm5KGKdI/0.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+    [![Data Recording Video](https://img.youtube.com/vi/l4TJm5KGKdI/hqdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+    
     
     
 2. Requirements
