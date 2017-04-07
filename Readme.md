@@ -1,5 +1,8 @@
 <h1>MyoWebToolkit</h1>
 
+[![Data Recording Video](https://img.youtube.com/vi/l4TJm5KGKdI/hqdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+
+
 1. What is it?
  
     This is a series of tools for Myo to do the following: 
@@ -12,11 +15,9 @@
     - and more at: <br />
         Dimitrios Ververidis, Sotirios Karavarsamis, Spiros Nikolopoulos, and Ioannis Kompatsiaris. 2016. Pottery gestures style comparison by exploiting Myo sensor and forearm anatomy. In Proceedings of the 3rd International Symposium on Movement and Computing (MOCO '16). ACM, New York, NY, USA, , Article 3 , 8 pages. DOI: https://doi.org/10.1145/2948910.2948924
     
-    Videos:
     
-    Data Recording:
     
-    [![Data Recording Video](https://img.youtube.com/vi/l4TJm5KGKdI/hqdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+    
     
     
     
