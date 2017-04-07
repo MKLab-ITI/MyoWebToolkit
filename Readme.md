@@ -1,14 +1,23 @@
+<h1>MyoWebToolkit</h1>
+
 1. What is it?
-   
-    This is a series of tools for 
+ 
+    This is a series of tools for Myo to do the following: 
     
     - Remote data recording
     - Visualization of data 
     - Simulation of hand gestures
     - A toolkit to do research on EMG, Muscles, Forces, Bone movements, Hand gestures
     
-    - See more in our paper<br />
+    - and more at: <br />
         Dimitrios Ververidis, Sotirios Karavarsamis, Spiros Nikolopoulos, and Ioannis Kompatsiaris. 2016. Pottery gestures style comparison by exploiting Myo sensor and forearm anatomy. In Proceedings of the 3rd International Symposium on Movement and Computing (MOCO '16). ACM, New York, NY, USA, , Article 3 , 8 pages. DOI: https://doi.org/10.1145/2948910.2948924
+    
+    Videos:
+    
+    Data Recording:
+    
+    [![Data Recording Video](https://www.youtube.com/watch?v=l4TJm5KGKdI/0.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+    
     
 2. Requirements
 
