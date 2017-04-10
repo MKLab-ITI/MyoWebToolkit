@@ -18,11 +18,7 @@
     - and more at: <br />
         Dimitrios Ververidis, Sotirios Karavarsamis, Spiros Nikolopoulos, and Ioannis Kompatsiaris. 2016. Pottery gestures style comparison by exploiting Myo sensor and forearm anatomy. In Proceedings of the 3rd International Symposium on Movement and Computing (MOCO '16). ACM, New York, NY, USA, , Article 3 , 8 pages. DOI: https://doi.org/10.1145/2948910.2948924
     
-    
-    
-    
-    
-    
+      
     
 2. Requirements
 
