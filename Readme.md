@@ -2,7 +2,7 @@
 
 [![Simulation Video](https://img.youtube.com/vi/l4TJm5KGKdI/maxresdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
 
-[![Data Recording Video](docs/imageScreenRecording.jpg)](docs/imageScreenRecording.jpg)
+[![Data Recording Video](https://github.com/MKLab-ITI/MyoWebToolkit/blob/master/docs/imageScreenRecording.png)](https://github.com/MKLab-ITI/MyoWebToolkit/blob/master/docs/imageScreenRecording.png)
 
 
 
