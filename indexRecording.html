@@ -9,23 +9,31 @@
   <!-- Your url goes here  -->
   <base href="http://127.0.0.1:8080/MyoWebToolkit/" />
 
-  <link rel="stylesheet" href="css/styleRecording.css">;
+  <!-- Css for the site -->
+  <link rel="stylesheet" href="css/styleRecording.css">
 
+  <!-- jQuery are usefull coding tools for javascript -->
   <script src="libs/jquery-1.12.0.min.js"></script>
+
+  <!-- Flot is the plotting library -->
   <script src="libs/Flot/jquery.flot.js"></script>
 
+  <!-- Myo.js is the library for connecting via websocket to Myo device -->
   <script src='myo/myo.js'></script>
+
+  <!-- imu_emg_Graphs is a library for plotting Myo signals -->
   <script src='myo/imu_emg_Graphs.js'></script>
 
 
-
-
   <script>
+      // We start with Myo disconnected. It is not necessary to record non-annotated signals
       Myo.disconnect();
 
+      // node.js socket for sending signals to node.js server
       var socket = io();
 
-      // When emg input comes from myo send it to node js
+      // Myo data callbacks.
+      // 1. When emg input comes from myo send it to node js
       Myo.on("emg", function(data){
           // For graphs visualization
           rawData = data;
@@ -33,7 +41,7 @@
           socket.emit("append", "EMG;" + (new Date).getTime() + ";" + data + String.fromCharCode(10));
       }); // End of Myo.on
 
-      // When imu input comes from myo send it to node js
+      // 2. When imu input comes from myo send it to node js
       Myo.on("imu", function(quant){
           // Send raw Data to Node.js
           socket.emit("append", "IMU;" + (new Date).getTime() + ";" + JSON.stringify( quant) + String.fromCharCode(10) );
@@ -44,60 +52,53 @@
 </head>
 <body>
   <!-- HTML -------------------------------------------- -->
+
+  <!-- Two html pages: 1. Give nickname, 2. MainMyoRecording -->
   <ul class="pages">
 
+    <!-- Give nickname (to name the datafile in recordings/data_[mynickname]_[mymove].txt -->
     <li class="login page">
       <div class="form">
         <h3 class="title">What's your nickname?</h3>
-        <input id="usernametextfield" class="usernameInput" type="text" maxlength="14" />
-        <div id="oknamebutton" style="color:white;margin-top:20px; cursor: pointer; font-size: larger" onclick="setUsername()">OK</div>
+        <input id="usernametextfield" class="usernameInput" type="text" maxlength="14" autofocus />
+        <div id="oknamebutton" onclick="setUsername()">OK</div>
       </div>
     </li>
 
-    <li class="chat page">
+    <!-- Main Myo Recording page -->
+    <li class="myo page">
 
-      <div id='pod0' class='pod1' style='opacity:0.2'>Pod 1</div>
-      <div id='pod1' class='pod2' style='opacity:0.2'>Pod 2</div>
-      <div id='pod2' class='pod3' style='opacity:0.2'>Pod 3</div>
-      <div id='pod3' class='pod4' style='opacity:0.2'>Pod 4</div>
-      <div id='pod4' class='pod5' style='opacity:0.2'>Pod 5</div>
-      <div id='pod5' class='pod6' style='opacity:0.2'>Pod 6</div>
-      <div id='pod6' class='pod7' style='opacity:0.2'>Pod 7</div>
-      <div id='pod7' class='pod8' style='opacity:0.2'>Pod 8</div>
+      <!-- Signal subplots -->
+      <div id='pod0' class='pod'>Pod 1</div>
+      <div id='pod1' class='pod'>Pod 2</div>
+      <div id='pod2' class='pod'>Pod 3</div>
+      <div id='pod3' class='pod'>Pod 4</div>
+      <div id='pod4' class='pod'>Pod 5</div>
+      <div id='pod5' class='pod'>Pod 6</div>
+      <div id='pod6' class='pod'>Pod 7</div>
+      <div id='pod7' class='pod'>Pod 8</div>
 
+      <!-- Main interaction area -->
+      <div class="interactionArea">
 
-      <div id="toggleMyoButton">
-        <button onclick='
-            if (this.value == "OFF") {
-                this.value = "ON";
-                this.innerHTML = "Myo Off";
-                Myo.connect();
-            } else {
-                this.value = "OFF";
-                this.innerHTML = "Myo On";
-                Myo.disconnect();
-            }'>
-          Toggle Myo sensor on/off </button>
-      </div>
+        <!-- Show some hints for the subject to follow -->
+        <div id="texthint">1. Myo at LEFT arm.<br />2. Press NEXT for hint video.<br /> 3. Press DO & REC to record. </div>
 
-
-      <div class="infoArea">
-        <div id="texthint">Start by pressing "Next" button to see what move to do. Then press "Do & Rec". </div>
+        <!-- Show a video for the movement to do -->
         <div class="imagehint">
-
           <video id="videohint" width="480" height="270" autoplay>
             <source src="" type="video/mp4">
             Your browser does not support the video tag.
           </video>
-
         </div>
 
+        <!-- The subject has the ability to go back and redo the recording (replace the old one) -->
+        <div id="back-button-triangle" onclick="gotoPrevious()">Back</div>
 
+        <!-- Go to next movement -->
+        <div id="next-button-triangle" onclick="gotoNext()">Next</div>
 
-          <div id="back-button-triangle" onclick="gotoPrevious()">Back</div>
-          <div id="next-button-triangle" onclick="gotoNext()">Next</div>
-
-
+        <!-- Some graphics for user-friendliness (an hour glass, cyclic) -->
         <svg id="hourglass" width="100" height="100">
           <circle id="circle1" cx="100" cy="50" r="50" fill="red"/>
           <path style="stroke: #2c3e50; stroke-dasharray:820; stroke-dashoffset:820; stroke-width:12; fill:transparent"
@@ -115,18 +116,18 @@
             <!--a r,r 0 1,0 -(r * 2),0-->
             <!--"-->
 
-
             <animate id='clockanim' attributeName="stroke-dashoffset" dur="2s" to="-820" repeatCount="0"/>
           </path>
         </svg>
 
+        <!-- Record Red button -->
         <div class="round-button"
              onclick="rec(); clockanim.beginElement()"
              onmouseover=circle1.style.fill="#660000";
-             onmouseleave=circle1.style.fill="red"><a class="round-button" >Do & Rec</a></div>
-
+             onmouseleave=circle1.style.fill="red">
+             Do <br /> & <br /> Rec
         </div>
-        <div class="exitbutton"></div>
+        </div>
 
     </li>
   </ul>
@@ -137,7 +138,7 @@
     var $window = $(window);
     var $usernameInput = $('.usernameInput'); // Input for username
     var $loginPage = $('.login.page');
-    var $chatPage = $('.chat.page');
+    var $chatPage = $('.myo.page');
 
     // Sets the client's username
     function setUsername () {
@@ -148,7 +149,6 @@
         $loginPage.fadeOut();
         $chatPage.show();
         $loginPage.off('click');
-
       }
     }
 
@@ -158,15 +158,20 @@
     }
 
 
-    var allVideos = ["indexFlex1.mp4", "middleFlex1.mp4"];
-    var allTextHints = ["Flex your index finger of your left arm",
-                        "Flex your middle finger of your left arm"];
+    // Videos and hints index
+    var allVideos = ["thumbFlex1.mp4", "indexFlex1.mp4", "middleFlex1.mp4", "ringFlex1.mp4", "smallFlex1.mp4"];
+    var allTextHints = ["Flex thumb finger",
+                        "Flex index finger",
+                        "Flex middle finger",
+                        "Flex ring finger",
+                        "Flex small finger"];
 
     var nMoves = allVideos.length;
 
 
     function gotoNext(){
 
+      // Do not capture in dead times
       Myo.disconnect();
 
       console.log('Next', currMovement);
@@ -195,22 +200,22 @@
 
           if (currMovement < 1) {
               document.getElementById('back-button-triangle').style.display = "none";
-
           }
       }
     }
 
+    // Record signals
     function rec(){
       console.log('record');
       document.getElementById("videohint").src = "videos/" + allVideos[currMovement];
 
+      // Create the file to store the Myo data
       socket.emit('createfile', {usr: username, action: allVideos[currMovement].split('.')[0]});
 
-
-
-
+      // Connect Myo *automatically the Myo.on callback in the begin sends the data to socket.js
       Myo.connect();
 
+      // Record for 3000 ms
       setInterval(
           function(){
                       Myo.disconnect();
@@ -225,21 +230,15 @@
                 console.log("initializing");
             }
         });
-
     }
 
-  </script>
+    $('document').ready(initFunc());
 
-
-  <script>
-
-      $('document').ready(initFunc());
-
-      // ! Important Close Myo when closing window
-      window.onbeforeunload = function() {
-          Myo.socket.close();
-          return null; //here also can be string, that will be shown to the user
-      }
+    // ! Important Close Myo when closing window
+    window.onbeforeunload = function() {
+        Myo.socket.close();
+        return null;
+    }
 
   </script>
 </body>
