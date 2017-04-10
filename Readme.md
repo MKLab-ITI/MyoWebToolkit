@@ -1,6 +1,9 @@
 <h1>MyoWebToolkit</h1>
 
-[![Data Recording Video](https://img.youtube.com/vi/l4TJm5KGKdI/maxresdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+[![Simulation Video](https://img.youtube.com/vi/l4TJm5KGKdI/maxresdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
+
+[![Data Recording Video](docs/imageScreenRecording.jpg)](docs/imageScreenRecording.jpg)
+
 
 
 1. What is it?
