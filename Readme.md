@@ -10,10 +10,10 @@
 </td>
 </tr>
 <tr><td>
-<button onclick="location.href='http://augreal.mklab.iti.gr/MyoWebToolkit/index.php'" >Live demo simulation</button>
+<a href="http://augreal.mklab.iti.gr/MyoWebToolkit/index.php" >Live demo simulation</a>
 </td>
 <td>
-<button onclick="location.href='http://augreal.mklab.iti.gr/MyoWebToolkit/indexRecording.php'">Live demo recording</button>
+<a href="http://augreal.mklab.iti.gr/MyoWebToolkit/indexRecording.php">Live demo recording</a>
 </td>
 <tr>
 </table>
