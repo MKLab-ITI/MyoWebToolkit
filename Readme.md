@@ -1,9 +1,22 @@
 <h1>MyoWebToolkit</h1>
 
-[![Simulation Video](https://img.youtube.com/vi/l4TJm5KGKdI/maxresdefault.jpg)](https://www.youtube.com/watch?v=l4TJm5KGKdI)
-
-[![Data Recording Video](https://github.com/MKLab-ITI/MyoWebToolkit/blob/master/docs/imageScreenRecording.png)](https://github.com/MKLab-ITI/MyoWebToolkit/blob/master/docs/imageScreenRecording.png)
-
+<table><tr><td>
+<a href="https://www.youtube.com/watch?v=l4TJm5KGKdI">
+<img src="https://img.youtube.com/vi/l4TJm5KGKdI/maxresdefault.jpg" width="512">
+</a>
+</td>
+<td>
+<img src="https://raw.githubusercontent.com/MKLab-ITI/MyoWebToolkit/master/docs/imageScreenRecording.png" width="512">
+</td>
+</tr>
+<tr><td>
+<button onclick="location.href='http://augreal.mklab.iti.gr/MyoWebToolkit/index.php'" >Live demo simulation</button>
+</td>
+<td>
+<button onclick="location.href='http://augreal.mklab.iti.gr/MyoWebToolkit/indexRecording.php'">Live demo recording</button>
+</td>
+<tr>
+</table>
 
 
 1. What is it?
@@ -38,9 +51,6 @@
     - Copy everything to a path visible to web or your local client
     - Install Apache server and run it
     - Install Node.js server and run "StartNodeServer.bat"
-
-     
-
     
 3. How to use?
 
