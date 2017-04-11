@@ -13,7 +13,7 @@
 <a href="http://augreal.mklab.iti.gr/MyoWebToolkit/index.html" >Live demo simulation</a>
 </td>
 <td>
-<a href="http://augreal.mklab.iti.gr/MyoWebToolkit/indexRecording.php">Live demo recording</a>
+<a href="http://augreal.mklab.iti.gr:3000">Live demo recording</a>
 </td>
 <tr>
 </table>
