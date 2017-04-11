@@ -171,6 +171,9 @@
 				return this;
 			},
 			streamEMG : function(enabled){
+
+				console.log("myo.js streamEMG connect index", this.connectIndex);
+
 				Myo.socket.send(JSON.stringify(['command',{
 					"command": "set_stream_emg",
 					"myo": this.connectIndex,

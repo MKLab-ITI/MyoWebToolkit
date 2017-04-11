@@ -16,11 +16,13 @@ var emgGraphs;
 Myo.on('connected', function(){
 	console.log('EMG graphs: Myo is connected');
 	this.streamEMG(true);
+
 	setInterval(function(){
 		//console.log(rawData);
 		updateGraphEMG(rawData);
 	}, 10);
 });
+
 
 //Myo.connect('com.myojs.emgGraphs');
 //This tells Myo.js to create the web sockets needed to communnicate with Myo Connect

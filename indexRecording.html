@@ -19,15 +19,19 @@
   <script src="libs/Flot/jquery.flot.js"></script>
 
   <!-- Myo.js is the library for connecting via websocket to Myo device -->
-  <script src='myo/myo.js'></script>
+  <script src='myo/myo2.js'></script>
 
   <!-- imu_emg_Graphs is a library for plotting Myo signals -->
   <script src='myo/imu_emg_Graphs.js'></script>
 
 
   <script>
+
+      isRecording = false;
+
+
       // We start with Myo disconnected. It is not necessary to record non-annotated signals
-      Myo.disconnect();
+      Myo.connect();
 
       // node.js socket for sending signals to node.js server
       var socket = io();
@@ -35,17 +39,34 @@
       // Myo data callbacks.
       // 1. When emg input comes from myo send it to node js
       Myo.on("emg", function(data){
-          // For graphs visualization
+
           rawData = data;
-          // Send raw Data to Node.js
-          socket.emit("append", "EMG;" + (new Date).getTime() + ";" + data + String.fromCharCode(10));
+
+          if (isRecording) {
+              // For graphs visualization
+
+              $.each($(".pod"),function(a,b){b.style.backgroundColor="red";});
+
+              // Send raw Data to Node.js                                           // LF character (change line)
+              socket.emit("append", "EMG;" + (new Date).getTime() + ";" + data + String.fromCharCode(10));
+          }else{
+              $.each($(".pod"),function(a,b){b.style.backgroundColor="#fefdff";});
+          }
+
+          $("#batteryIndicator").text("BATTERY LEVEL:" + Myo.myos[0].requestBatteryLevel().batteryLevel);
       }); // End of Myo.on
+
 
       // 2. When imu input comes from myo send it to node js
       Myo.on("imu", function(quant){
           // Send raw Data to Node.js
-          socket.emit("append", "IMU;" + (new Date).getTime() + ";" + JSON.stringify( quant) + String.fromCharCode(10) );
+          if (isRecording)
+            socket.emit("append", "IMU;" + (new Date).getTime() + ";" + JSON.stringify( quant) + String.fromCharCode(10) );
       });
+
+
+
+
   </script>
 
 
@@ -67,6 +88,8 @@
 
     <!-- Main Myo Recording page -->
     <li class="myo page">
+
+      <div id="batteryIndicator">BATTERY: </div>
 
       <!-- Signal subplots -->
       <div id='pod0' class='pod'>Pod 1</div>
@@ -172,7 +195,9 @@
     function gotoNext(){
 
       // Do not capture in dead times
-      Myo.disconnect();
+      //Myo.disconnect();
+
+      isRecording = false;
 
       console.log('Next', currMovement);
 
@@ -190,7 +215,9 @@
     }
 
     function gotoPrevious(){
-      Myo.disconnect();
+      //Myo.disconnect();
+
+      isRecording = false;
 
       console.log('Previous', currMovement);
       if (currMovement > 0) {
@@ -209,19 +236,36 @@
       console.log('record');
       document.getElementById("videohint").src = "videos/" + allVideos[currMovement];
 
+        $("#circle1")[0].style.display = "none";
+        $(".round-button")[0].style.display = "none";
+
       // Create the file to store the Myo data
       socket.emit('createfile', {usr: username, action: allVideos[currMovement].split('.')[0]});
 
       // Connect Myo *automatically the Myo.on callback in the begin sends the data to socket.js
-      Myo.connect();
+      //Myo.connect();
+
+        isRecording = true;
+
+
+        var t1 = (new Date()).getTime();
 
       // Record for 3000 ms
       setInterval(
           function(){
-                      Myo.disconnect();
+                      //Myo.disconnect();
+                      isRecording = false;
+                    $("#circle1")[0].style.display = "flex";
+                    $(".round-button")[0].style.display = "block";
+
+                    var t2 = (new Date()).getTime();
+                    console.log("t2 - t1", t2-t1);
+
                     },
-      3000);
+          3000);
     }
+
+
 
     function initFunc() {
         $('#usernametextfield').keypress(function(e){

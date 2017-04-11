@@ -1,3 +1,4 @@
+// Myo Simulation Tool
 // Here you can process myo signals EMG before visualization
 function MyoActivationFunctions(nPods, Anorm, my_nnls){
 
