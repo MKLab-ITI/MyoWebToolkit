@@ -251,10 +251,10 @@
         var t1 = (new Date()).getTime();
 
       // Record for 3000 ms
-      setInterval(
+      setTimeout(
           function(){
                       //Myo.disconnect();
-                      isRecording = false;
+                     isRecording = false;
                     $("#circle1")[0].style.display = "flex";
                     $(".round-button")[0].style.display = "block";
 

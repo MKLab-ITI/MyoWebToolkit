@@ -1,5 +1,10 @@
+What version is this ?
 
+0.8 12/04/2017 :
+- Fixed Recording tool. Now it works fine !
+- Simulation tool was already working.
 
+Archive
 0.71 Publish at Github : 06/04/2017
 0.7 DB recorder : 05/04/2017
 0.6 Code tide up : 19/02/2016
@@ -8,3 +13,43 @@
 
 
 
+Dimitrios Ververidis for Centre for Research and Technology Hellas
+Information Technologies Institute
+http://iti.gr
+                                                                       ``..----..`
+                                                                 `-:/+ossyyyyyyyyysso+:
+                                                             `-/osyyyyyyyyyyyyyyyyyyyyy-
+GREECE                                                     `:osyyyyyyyyyso++//////++oosy+
+                                                         `oyyyyyyso/:.```           ```.
+                                                         `+osso/.`
+                                                          :+os.       `.-::/++++++//:--.`
+                       `````                        ```.-:+syy/  `.-/osyyyyyyyyyyyyyyyyys:
+           ``.--    :ossssssssooooo+++++//+/+++++ooossssyyyyyys-/osyyyyyyyyyyysssssyyyyyyo`
+       `-/+ssyys`   .yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyys+./yyyyyyso/:-..```````..-:/+.
+    .:osyyyyyyyy-    oyyyyyyyyyyyyyyyyyyyyyyyyyyyssssooo+/:.`  .yyo/-.`
+  .osyyyyyyyyyyyo    -yyyyyyyyyyyyyyyyyy/........`````         `/.`         `....-....``
+  `syyyyyyyyyyyyy.   `syyyyyyyyyyyyyyyyyo`                  `.:o+     `.:/+osssyyyyyyssso+/-
+   /yyyyyyyyyyyyy/    :++//////++++++oooo-..........---::/+ossyyy.`.:osyyyyyyyyyyyyyyyyyyyys`
+   .syyyyyyso+:-.`                     ``-sssssssyyyyyyyyyyyyyyyo-oyyyyyyyysoo+//::://++oosy:
+    +yyso/-``                            `oyyyyyyyyyyyyyyyysso+-``syyyso/:.``            ``..
+    -o:.`       ``.    `/+++++++++////::::+//+///////::---..``    +s+:.`
+           `.-/+osy-    oyyyyyyyyyyyyyyyyys`                     .+.       `.-:/++oooo++/:-..`
+        .-+osyyyyyyo    :yyyyyyyyyyyyyyyyyy:           `````..-/osy.   `-/osyyyyyyyyyyyyyyyyso.
+      -+syyyyyyyyyyy.   `syyyyyyyyyyyyyyyyys++++++++++oooosssyyyyyy/`-+syyyyyyyyyssssssssyyyyy/
+      /yyyyyyyyyyyyy/    /yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyys+.oyyyyyyso/:-.````````..-://
+      .yyyyyyyyyyyyys`   .oooooooooooossssssssssssssssssoooo++/:.`  /yyyo/-`
+       +yyyyyyyyso+:-`    ``      `````````..`......``````          -o:.`       ``..-----..``
+       -yyyys+:.`                                                `.:s:     `.-/ossyyyyyyyyssoo+/.
+       `oo/.`        ``..---:::::::::------............----:://+osyyyo  `-/oyyyyyyyyyyyyyyyyyyyy+
+        ``     ``-:+oosyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyo./syyyyyyyso+//:::::/++osss`
+            `-/osyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyysso+-`-yyyyys+:.`             `..`
+         `-+syyyyyyysso+//::------------:::::://////////:::---...`    `sys/-`
+         .yyyyyys+:-.`                                               `-+-`
+          oyso:.`           `````````````````             ``````..-/+oys`
+          .:`       ``.:/++ooossssssssssoooooooo++++++++ooooosssyyyyyyyy-
+                `-/+syyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyss/`
+             .:+syyyyyyyyyyssssoooooooooosssssssssssssssssssssoo++/:-.
+           `+yyyyyyyss+/:-.``                ```````````````
+            +yyyso/-`
+            .s+:`
+             `
