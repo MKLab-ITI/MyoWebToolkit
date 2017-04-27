@@ -8,23 +8,101 @@
 </head>
 <body>
 
+<!-- 3rd party javascript libraries  -->
+<!-- Threejs -->
+<script src="libs/threejs/76/build/three.js"></script>
 
-<!-- All javascript libraries are included in the header.html -->    
-<link rel="import" href="indexHeader.html">
-    
+<!-- Threejs libraries -->
+<script src="libs/threejs/76/examples/js/Detector.js"></script>
+<script src="libs/threejs/76/examples/js/libs/stats.min.js"></script>
+<script src="libs/threejs/76/examples/js/controls/OrbitControls.js"></script>
+<script src="libs/threejs/76/examples/js/exporters/OBJExporter.js"></script>
+<script src="libs/threejs/76/examples/js/loaders/OBJLoader.js"></script>
+
+<!-- Jquery -->
+<script src="libs/jquery-1.12.0.min.js"></script>
+<script src="libs/jquery-ui_1.12.0.js"></script>
+
+<!-- Plotting signals -->
+<script src="libs/Flot/jquery.flot.js"></script>
+
+<!-- Physics --->
+<script type="text/javascript" src="libs/Physijs/physi.js"></script>
+
+<script>
+    'use strict';
+    // Physics library
+    Physijs.scripts.worker = 'libs/Physijs/physijs_worker.js';
+    Physijs.scripts.ammo = 'ammo.js';
+</script>
+
+<!-- THREEX : Gaming interface capabilities -->
+<script src='libs/THREEx/THREEx.WindowResize.js'></script>
+<script src="libs/THREEx/THREEx.FullScreen.js"></script>
+
+<!-- Math operations -->
+<script src="libs/math.min.js"></script>
+<script src="libs/numeric-1.2.6.js"></script>
+<script src="libs/nnls.js"></script>
+<script src="libs/pcnnls.js"></script>
+<script src="libs/matrixOperations.js"></script>
+
+<!-- Save parameters in a txt file -->
+<script src="libs/FileSaver.js"></script>
+
+<!-- Interactive pass js variables to html -->
+<script src='libs/dat.gui.js'></script>
+
+<!-- Video feature -->
+<script src="libs/webcamera.js"></script>
+
+<!-- This does the CSG -->
+<script src="libs/tiansijie/index.js"></script>
+
+<!-- MyoWebToolkit libs -->
+<!-- Class where Numerical and path data are stored here -->
+<script src="simulation/StorageData.js"></script>
+
+<!-- Class to load muscles, bones and constraints -->
+<script src="simulation/MusclesBonesConstraints.js"></script>
+
+<!-- Class to load Muscle Forces -->
+<script src="simulation/MusclesForces.js"></script>
+<script src="simulation/FlexorsGroup.js"></script>
+<script src="simulation/ExtensorsGroup.js"></script>
+<script src="simulation/DeviatorsGroup.js"></script>
+<script src="simulation/PronatorsSupinatorsGroup.js"></script>
+
+<!-- Scene and related (camera, lights) -->
+<script src="simulation/Enviromentals.js"></script>
+
+<!-- Various -->
+<script src="simulation/utilities.js"></script>
+
+<!-- Materials -->
+<script src="simulation/materials.js"></script>
+
+<!-- Sprites -->
+<script src="simulation/annotationSprites.js"></script>
+
+<!-- My Hard Keys handler : needs mousetrap 3rd party library -->
+<script src="libs/keyboard/mousetrap.min.js"></script>
+<script src="simulation/hardKeys.js"></script>
+
+<!-- Myo libraries -->
+<script src='myo/myo.js'></script>
+<script src='myo/imu_emg_Graphs.js'></script>
+<script src='myo/myoFunct.js'></script>
+
 <!-- All 3d loaded here -->
 <div id="container"></div>
 
+<!-- make params gui draggable -->
 <script>
     $( function() {
-        $( "#my-gui-container" ).draggable();
+        $("#my-gui-container" ).draggable();
     } );
 </script>
-
-
-<!--
-<div id="legal">Muscles and Bones are part of: "BodyParts3D, © The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan.", <a href="http://lifesciencedb.jp/bp3d/">http://lifesciencedb.jp/bp3d/</a></div>
--->
 
 <!-- Myo graphs -->
 <div id='pod0' class='pod1' style=''>Pod 1</div>
@@ -42,13 +120,10 @@
 <div id="infophp">    
     <div id="progress">
         <span id="message">Intersecting ...</span>
-
-
             <div id="progressbar" class="shadow">
                 <div id="bar" class="shadow" style="width:0px"></div>
             </div>
-
-    </div>        
+    </div>
     
     <div class="result"></div>
     <div class="result2"></div>
@@ -74,7 +149,6 @@
     <button onclick='
             if (this.value == "OFF") {
                 this.value = "ON";
-
                 this.innerHTML = "Physics Off";
                 isPhysicsPaused = false;
                 scene.onSimulationResume();
@@ -91,7 +165,7 @@
 
 
 <!-- Video Camera -->    
-<video autoplay></video>    
+<!--<video autoplay></video>    -->
 
 <script>
 
@@ -103,7 +177,6 @@ var muscleActivity = new Array(15).fill(0);
 //================== ENVIRONMENTALS 3D ===================
 var myEnv = new Enviromentals();
 
-
 //======================== FORCES ==========================
 // ---- EXTENSION FORCES -------
 var extensorsGroup = new ExtensorsGroup();
@@ -111,17 +184,16 @@ var extensorsGroup = new ExtensorsGroup();
 //  --- FLEX FORCES ---
 var flexGroup = new FlexorsGroup();
 
-//------ DEV FORCES ---------------
+//------ Deviation FORCES ---------------
 var deviatorsGroup = new DeviatorsGroup();
 
-//------ DEV FORCES ---------------
+//------ Pronation FORCES ---------------
 var pronatorsSupinatorsGroup = new PronatorsSupinatorsGroup();
 
+// Another level of coefficients
 var activLevel_FingersFlex = 0;
 var activLevel_FingersExtent = 0;
-
 var activLevel_FingersSmExt = 0;
-
 var activLevel_CarpiFlex = 0;
 var activLevel_CarpiExtent = 0;
 var activLevel_UlnarDeviation = 0;
@@ -130,31 +202,31 @@ var activLevel_Pronation = 0;
 var activLevel_Supination = 0;
 
 
-var sign = -1;
-
-var stopFlag = false;
+//var sign = -1;
+//var stopFlag = false;
 
 // --------------
-var start = null;
+//var start = null;
+
+// Get current time in ms
 var timestamp = performance.now();
+
 var cachedMuscles = true;
+
 var frameDelta = 0;
 var clock = new THREE.Clock();
 
 // Bones and Muscles from MuscleBonesPath.js
 var musclesBonesConstraints = new MuscleBonesConstraints();
 
-
 var myModelBones = StorageData.getBonesFNs();
 var myModelMuscles = StorageData.getMusclesFNs();
 var nMuscles = myModelMuscles.length;     
 var nBones = myModelBones.length;         
-var myoMusclesWeightsMatrix = [];    
-    
-//-----------------------  MAIN ---------------------------------
+var myoMusclesWeightsMatrix = [] ;
 
-    
-var spriteLabelMuscles = new Array(nMuscles);        
+//-----------------------  MAIN ---------------------------------
+var spriteLabelMuscles = new Array(nMuscles);
     
 var colors = randomColors(nMuscles);
 var mshColor = new Array(nMuscles);
@@ -197,7 +269,7 @@ var gui_controls = new function(){
     
 // GUI controls
 var gui = new dat.GUI( {autoPlace: false} );
-//gui.close();
+gui.close();
 
 // Video control    
 var video_stream_open = {open:false};
@@ -324,6 +396,7 @@ function init()
 
                 //--------- Distance --------------------------------
                 var distVec = new THREE.Vector3();
+
                 distVec.subVectors(musclesBonesConstraints.myoPodPositions[j], musclesInterCentroidsGlobal[muscleName]);
                 var dist = Math.sqrt(distVec.x*distVec.x + distVec.y*distVec.y + distVec.z*distVec.z);
 
@@ -585,6 +658,8 @@ window.onbeforeunload = function() {
 
 
 </script>
+
+
 
 
 </body>

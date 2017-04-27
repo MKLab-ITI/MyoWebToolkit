@@ -2,91 +2,110 @@ class MuscleBonesConstraints {
 
     contructor(){ }
 
-    // ----  Myo ---------------------------------------------------
+    /**
+     * 3D
+     * Create Myo sensor as a sum of 8 pods in 3D space
+     */
     loadMyoPods() {
-        var myos = this.createMyo();
-        var phy_mesh_radius = this.getBone('radius');
-        phy_mesh_radius.add(myos[1]);
 
-        this.nPods = myos[0];
+        // create a 3D objects constituting of 8 pods
+        var myos = this.createMyo();
+
+        // Get radius bone
+        var phy_mesh_radius = this.getBone('radius');
+
+        // Add myo around radius bone
+        phy_mesh_radius.add(myos[1]); // at 1 is the Myo pod object
+
+        this.nPods = myos[0]; // number of pods
         this.myoSensor = myos[1];
-        this.myoPodPositions = myos[3];
+        this.myoPodPositions = myos[3]; // position of each pod
         //scene.add(myoSensor);
     }
 
-    // ===================== Myo ================================
+    /**
+     *
+     * Create 8 Myo pods in 3D space
+     *
+     * @returns {[nPods, myoSensor, myoPods, myoPodPositions]}
+     */
     createMyo(){
 
         var nPods = 8;
         var myoPods = new Array(nPods);
 
+        // Myo is elliptical
         var radiusAroundArmX = 50;
         var radiusAroundArmY = 37;
+
+        // each myo pod has dimensions 35 mill x 15 mill x 5 mill
         var myoSingleGeometry =  new THREE.BoxGeometry(35, 15, 5);
+
+        // Optional: Sprites are labels that face at you so that you know which pod is 1, 2, 3
         var myoSpriteLabel = new Array(nPods);
         var myoPodPositions = new Array(nPods);
 
+        // Set Myo as empty 3D object.
         var myoSensor = new THREE.Object3D();
+
+        // Myo position at forearm
         myoSensor.position.set(-12, 5, 40);
+
+        // Myo rotation
         myoSensor.rotateX(-5*2*Math.PI/360);
-        //myoSensor.rotateY(-10*2*Math.PI/360);
+
+        // These will translate relative position to absolute
+        //myoSensor.updateMatrixWorld();
+
 
         for (var i = 0; i < nPods; i++) {
 
-            //myoPods[i] = new THREE.Mesh(myoSingleGeometry, myoMaterial); // i%2==0 ? myoMaterial: myoMaterialInterpolated);
-
+            // Pod 3D box
             myoPods[i] = new Physijs.BoxMesh(myoSingleGeometry, myoMaterial, 0);
 
+            // Pod position
             myoPods[i].position.set(radiusAroundArmX*Math.cos(2*Math.PI*i/nPods - Math.PI/4),
                 radiusAroundArmY*Math.sin(2*Math.PI*i/nPods - Math.PI/4),0);
 
+            // Name each pod
             myoPods[i].name = "pod"+i;
 
+            // Rotate so as to look Myo center.
             myoPods[i].lookAt(new THREE.Vector3(0,0,0));
+
+            // Add each Pod to Myo empty object
             myoSensor.add(myoPods[i]);
 
-            myoSensor.updateMatrixWorld();
+            // Update myo pod positions to absolute positions
             myoPodPositions[i] = new THREE.Vector3();
-            myoPodPositions[i].setFromMatrixPosition( myoPods[i].matrixWorld );
+            myoPodPositions[i] = myoPods[i].position; //.setFromMatrixPosition( myoPods[i].matrixWorld );
 
-            //this.showMyoAnnotationSprite(myoSensor, myoPods, i, myoPodPositions);
+            var strS = " s" + unicodeSubscripts(i+1) + "(t)";
+            myoSpriteLabel[i] = makeTextSpriteSingleLine( strS, {fontsize: 24, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor:{r:200, g:200, b:200, a:0.5}});
 
-            //var myoSpriteLabel = [];
+            myoPods[i].add( myoSpriteLabel[i]  );
 
-            var strS = "";
-            if (i < 10){
-                strS = " s" + unicodeSubscripts(i+1) + "(t)"
-            } else {
-                strS = " \u015D" + unicodeSubscripts(1) + unicodeSubscripts(i-10) + "(t)"
-            }
 
-            myoSpriteLabel = makeTextSpriteSingleLine( strS, {fontsize: 24, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor:{r:200, g:200, b:200, a:0.5}});
+            //console.log(myoPods[i].position);
 
-            //myoSensor.updateMatrixWorld();
 
-            //console.log(myoSpriteLabel[i]);
-
-            //myoSpriteLabel[i].position.set( myoPods[i].position ); // position;//  .setFromMatrixPosition( myoPods[i].matrixWorld ); // = .addVectors(myoSensor.position, myoPods[i].position);
-            //myoSpriteLabel[i].position.setZ(myoSpriteLabel[i].position.z);
-
-            myoPods[i].add( myoSpriteLabel  );
-
-            // Connection line
-            //var geometry = new THREE.Geometry();
-            //geometry.vertices.push(
+            // // Connection line
+            // var geometry = new THREE.Geometry();
+            //
+            // // console.log(i, 1, myoPods[i].position);
+            // // console.log(i, 2, myoSpriteLabel[i].position);
+            //
+            // geometry.vertices.push(
             //    myoSpriteLabel[i].position,
-            //    myoPodPosition[i]
-            //);
+            //    myoPodPositions[i]
+            // );
             //
-            //var line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0xff0000}) );
+            // var line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0xff0000}) );
             //
-            //myoPods[i].add( line );
-
+            // myoPods[i].add( line );
         }
 
-        var m = [nPods, myoSensor, myoPods, myoPodPositions];
-
-        return m;
+        return [nPods, myoSensor, myoPods, myoPodPositions];
     }
 
 
@@ -244,11 +263,6 @@ class MuscleBonesConstraints {
      * @param nBones
      * @param myModelBones
      */
-
-
-
-
-
     asyncLoadBones(loader, nBones, myModelBones) {
 
         var spriteLabelBones = [];
