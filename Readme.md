@@ -104,7 +104,7 @@ Mitsuhashi, N., Fujieda, K., Tamura, T.,
 Kawamoto, S., Takagi, T., and Okubo, K.
 BodyParts3D: 3D structure database for
 anatomical concepts. Nucleic acids research 37,
-suppl 1 (2009), D782–D785.
+suppl 1 (2009), D782–D785. http://lifesciencedb.jp/bp3d/
 
 <br />
 
@@ -117,4 +117,8 @@ corresponding to project i-Treasures, “Intangible Treasures
 \- Capturing the Intangible Cultural Heritage and
 Learning the Rare Know-How of Living Human Treasures”,
 http://i-treasures.eu.
+
+and currently: 
+
+This work is part of the ENVISAGE project that has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 731900. http://www.envisage-h2020.eu/
 

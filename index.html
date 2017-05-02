@@ -63,6 +63,9 @@
 <!-- Class where Numerical and path data are stored here -->
 <script src="simulation/StorageData.js"></script>
 
+<!-- Class to make 3D object of Myo armband -->
+<script src="simulation/MyoArmband.js"></script>
+
 <!-- Class to load muscles, bones and constraints -->
 <script src="simulation/MusclesBonesConstraints.js"></script>
 
@@ -213,11 +216,15 @@ var timestamp = performance.now();
 
 var cachedMuscles = true;
 
-var frameDelta = 0;
-var clock = new THREE.Clock();
+//var frameDelta = 0;
+//var clock = new THREE.Clock();
+
+// Construct 3D Myo Armband
+leftMyoArmband = new MyoArmband();
 
 // Bones and Muscles from MuscleBonesPath.js
 var musclesBonesConstraints = new MuscleBonesConstraints();
+
 
 var myModelBones = StorageData.getBonesFNs();
 var myModelMuscles = StorageData.getMusclesFNs();
@@ -226,8 +233,8 @@ var nBones = myModelBones.length;
 var myoMusclesWeightsMatrix = [] ;
 
 //-----------------------  MAIN ---------------------------------
-var spriteLabelMuscles = new Array(nMuscles);
-    
+//var spriteLabelMuscles = new Array(nMuscles);
+
 var colors = randomColors(nMuscles);
 var mshColor = new Array(nMuscles);
     
@@ -366,7 +373,7 @@ function init()
         musclesBonesConstraints.loadBoneConstraints();
 
         // Load Myo Pods and its annotation labels
-        musclesBonesConstraints.loadMyoPods();
+        leftMyoArmband.loadMyoPods();
 
         // Load async Muscles to
         musclesBonesConstraints.asyncLoadMuscles(loaderMuscles, nMuscles, myModelMuscles);

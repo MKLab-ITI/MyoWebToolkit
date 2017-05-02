@@ -6,7 +6,8 @@ class StorageData {
 
     static getMuscleShortNames () {
 
-        var muscleOrderByMyoStart = ['brachioradialis',
+        var muscleOrderByMyoStart =[
+                                    ['brachioradialis',
                                      'Hum. hea. lef. pro. ter.',
                                      'Uln. hea. lef. pro. ter.',
                                      'ext. car. rad. lon.',
@@ -20,7 +21,24 @@ class StorageData {
                                      'fle. dig. pro.',
                                      'palmaris longus',
                                      'fle. dig. sup.',
-                                     'fle. car. rad.'];
+                                     'fle. car. rad.'],
+                                     ['B',
+                                      'HPT',
+                                      'UPT',
+                                      'ECRL',
+                                      'S',
+                                      'ECRB',
+                                      'ED',
+                                      'EDM',
+                                      'ECU',
+                                      'UFCU',
+                                      'HFCU',
+                                      'FDP',
+                                      'PL',
+                                      'FDS',
+                                      'FCR'
+                                     ]
+                                   ];
 
 
         return muscleOrderByMyoStart;
@@ -178,12 +196,5 @@ class StorageData {
 
 
     getMusclesToForcesCorrelation(){
-
-
-
-
-
-
-
     }
 }

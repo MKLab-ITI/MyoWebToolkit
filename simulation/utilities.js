@@ -115,13 +115,15 @@ function getObjLabel(object){
                     label += labelsplit[i].substring(0,3)+". ";
         }
     }
-
     label = label.trim();
 
+    // Find very abbreviated muscle name
+    var shnames = StorageData.getMuscleShortNames();
+    var i = shnames[0].indexOf(label);
 
+    var label_out = i ? shnames[1][i] : label;
 
-    return label
-    
+    return label_out;
 }
 
 
@@ -330,16 +332,18 @@ function makeTextSpriteSingleLine( messageA, parameters )
 	// get size data (height depends only on font size)
 	var metrics = context.measureText( messageA );
 	var textWidth = metrics.width;
-    
-
 
     if (textWidth>=128)
         canvas.width = 256;
-    
-    if (textWidth<=64)
-        textWidth = 64;
-    
-    
+
+
+    // if (textWidth<=64)
+    //     textWidth = 64;
+    //
+    // if (textWidth<=32)
+    //     textWidth = metrics.width;
+
+
 	// background color
 	context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + ","
 								  + backgroundColor.b + "," + backgroundColor.a + ")";
@@ -348,22 +352,25 @@ function makeTextSpriteSingleLine( messageA, parameters )
 								  + borderColor.b + "," + borderColor.a + ")";
 
 	context.lineWidth = borderThickness;
-	roundRect(context, borderThickness/2, borderThickness/2, textWidth + borderThickness, (fontsize * 1.4 + borderThickness)*1, 6);
-	// 1.4 is extra height factor for text below baseline: g,j,p,q.
-	
+
+
+	var w = textWidth + borderThickness;
+    var h  =  (fontsize * 1.4 + borderThickness)*1; // 1.4 is extra height factor for text below baseline (sub-script).
+
+	roundRect(context, borderThickness/2 + w, // x
+                       borderThickness/2 + h, //y
+                       w, h, 6);
 	// text color
 	context.fillStyle = "rgba(0, 0, 0, 1.0)";
 
-	context.fillText( messageA, borderThickness, fontsize + borderThickness);
-        
-	
+	context.fillText( messageA, borderThickness + w, fontsize + borderThickness + h);
+
 	// canvas contents will be used for a texture
-	var texture = new THREE.Texture(canvas) 
+	var texture = new THREE.Texture(canvas);
 	texture.needsUpdate = true;
 
 	var spriteMaterial = new THREE.SpriteMaterial( { map: texture } );
-    
-    
+
 	var sprite = new THREE.Sprite( spriteMaterial );
 	
     if (textWidth>=128)
@@ -372,15 +379,9 @@ function makeTextSpriteSingleLine( messageA, parameters )
         sprite.scale.set(20, 5, 0.0);
     else    
         sprite.scale.set(20, 5, 0.0);
-    
-    
-    
-    
+
 	return sprite;	
 }
-
-
-
 
 
 function makeTextSprite( messageA, messageB, parameters )

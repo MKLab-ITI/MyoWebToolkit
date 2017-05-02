@@ -3,113 +3,6 @@ class MuscleBonesConstraints {
     contructor(){ }
 
     /**
-     * 3D
-     * Create Myo sensor as a sum of 8 pods in 3D space
-     */
-    loadMyoPods() {
-
-        // create a 3D objects constituting of 8 pods
-        var myos = this.createMyo();
-
-        // Get radius bone
-        var phy_mesh_radius = this.getBone('radius');
-
-        // Add myo around radius bone
-        phy_mesh_radius.add(myos[1]); // at 1 is the Myo pod object
-
-        this.nPods = myos[0]; // number of pods
-        this.myoSensor = myos[1];
-        this.myoPodPositions = myos[3]; // position of each pod
-        //scene.add(myoSensor);
-    }
-
-    /**
-     *
-     * Create 8 Myo pods in 3D space
-     *
-     * @returns {[nPods, myoSensor, myoPods, myoPodPositions]}
-     */
-    createMyo(){
-
-        var nPods = 8;
-        var myoPods = new Array(nPods);
-
-        // Myo is elliptical
-        var radiusAroundArmX = 50;
-        var radiusAroundArmY = 37;
-
-        // each myo pod has dimensions 35 mill x 15 mill x 5 mill
-        var myoSingleGeometry =  new THREE.BoxGeometry(35, 15, 5);
-
-        // Optional: Sprites are labels that face at you so that you know which pod is 1, 2, 3
-        var myoSpriteLabel = new Array(nPods);
-        var myoPodPositions = new Array(nPods);
-
-        // Set Myo as empty 3D object.
-        var myoSensor = new THREE.Object3D();
-
-        // Myo position at forearm
-        myoSensor.position.set(-12, 5, 40);
-
-        // Myo rotation
-        myoSensor.rotateX(-5*2*Math.PI/360);
-
-        // These will translate relative position to absolute
-        //myoSensor.updateMatrixWorld();
-
-
-        for (var i = 0; i < nPods; i++) {
-
-            // Pod 3D box
-            myoPods[i] = new Physijs.BoxMesh(myoSingleGeometry, myoMaterial, 0);
-
-            // Pod position
-            myoPods[i].position.set(radiusAroundArmX*Math.cos(2*Math.PI*i/nPods - Math.PI/4),
-                radiusAroundArmY*Math.sin(2*Math.PI*i/nPods - Math.PI/4),0);
-
-            // Name each pod
-            myoPods[i].name = "pod"+i;
-
-            // Rotate so as to look Myo center.
-            myoPods[i].lookAt(new THREE.Vector3(0,0,0));
-
-            // Add each Pod to Myo empty object
-            myoSensor.add(myoPods[i]);
-
-            // Update myo pod positions to absolute positions
-            myoPodPositions[i] = new THREE.Vector3();
-            myoPodPositions[i] = myoPods[i].position; //.setFromMatrixPosition( myoPods[i].matrixWorld );
-
-            var strS = " s" + unicodeSubscripts(i+1) + "(t)";
-            myoSpriteLabel[i] = makeTextSpriteSingleLine( strS, {fontsize: 24, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor:{r:200, g:200, b:200, a:0.5}});
-
-            myoPods[i].add( myoSpriteLabel[i]  );
-
-
-            //console.log(myoPods[i].position);
-
-
-            // // Connection line
-            // var geometry = new THREE.Geometry();
-            //
-            // // console.log(i, 1, myoPods[i].position);
-            // // console.log(i, 2, myoSpriteLabel[i].position);
-            //
-            // geometry.vertices.push(
-            //    myoSpriteLabel[i].position,
-            //    myoPodPositions[i]
-            // );
-            //
-            // var line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0xff0000}) );
-            //
-            // myoPods[i].add( line );
-        }
-
-        return [nPods, myoSensor, myoPods, myoPodPositions];
-    }
-
-
-    /**
      * Async load muscles
      *
      * @param loader
@@ -118,8 +11,6 @@ class MuscleBonesConstraints {
      */
     asyncLoadMuscles(loader, nMuscles, myModelMuscles) {
 
-        //var centerOfBones = new THREE.Vector3(230, -80, 0);
-        var centerOfBones = new THREE.Vector3(0, 0, 0);
 
         for (var i = 0; i < nMuscles; i++) { //
 
@@ -179,13 +70,13 @@ class MuscleBonesConstraints {
                         var meshCentroid = calculateCenterOfMass(meshRes.geometry);
 
                         // Show Label -------------------------------
-                        label = showMuscleLabelSprite(scene, object, spriteLabelMuscles, meshCentroid, centerOfBones, volume);
+                        var sprite_and_label = showMuscleLabelSprite(object, meshCentroid, volume);
 
                         //----------Archive for calculating distances ----
-                        musclesInterCentroidsGlobal[label] = meshCentroid;
-                        musclesInterVolumeGlobal[label] = volume;
+                        musclesInterCentroidsGlobal[sprite_and_label[1]] = meshCentroid;
+                        musclesInterVolumeGlobal[sprite_and_label[1]] = volume;
 
-
+                        muscleCrossPhy.add(sprite_and_label[0]);
 
                     }, // Progress
                     function ( xhr ) {
@@ -199,31 +90,38 @@ class MuscleBonesConstraints {
 
                 loader.load("leftForearm/auto_selected_muscles_n_bones/cache_intersections/" + myModelMuscles[i], function (meshRes) {
 
+                        // Make geometry from BufferedGeometry
                         meshRes.children[0].geometry = new THREE.Geometry().fromBufferGeometry(meshRes.children[0].geometry);
 
+                        // Move muscles from local position to world position
                         meshRes.children[0].geometry.applyMatrix( new THREE.Matrix4().makeTranslation(-247, 95, -930) );
+
+                        // Rotate muscles from local rotation to world rotation
                         meshRes.children[0].geometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler( new THREE.Euler(.15, .2 , 0.1, 'XYZ' )) );
 
-
+                        // Give to muscles randomly generated colors
                         meshRes.children[0].material = mshColor[Math.floor(15 * Math.random())];
 
-
-                        var musclePhy = new Physijs.BoxMesh(meshRes.children[0].geometry, meshRes.children[0].material, 0);
-
+                        // Calculate volume and center of mass of each muscle
                         var volume = calculateVolume(meshRes.children[0].geometry);
                         var meshCentroid = calculateCenterOfMass(meshRes.children[0].geometry);
 
-                        var label = showMuscleLabelSprite(scene, meshRes, spriteLabelMuscles, meshCentroid, centerOfBones, volume);
+                        // Make the physics object of the muscle
+                        var musclePhy = new Physijs.BoxMesh(meshRes.children[0].geometry, meshRes.children[0].material, 0);
 
-                        console.log(label);
+                        var sprite_and_label = showMuscleLabelSprite(meshRes, meshCentroid, volume);
 
+                        musclePhy.add(sprite_and_label[0]);
+
+                        console.log(sprite_and_label[1]);
+
+                        //---------- Store centroids and volumes to a global variable ----------------------------------
+                        musclesInterCentroidsGlobal[sprite_and_label[1]] = meshCentroid;
+                        musclesInterVolumeGlobal[sprite_and_label[1]] = volume;
+
+                        // ---- Add all phy muscles object to radius phy object ---------------------------
                         var radi = musclesBonesConstraints.getBone('radius');
-
                         radi.add(musclePhy);
-
-                        //---------- Calculate Distances ----
-                        musclesInterCentroidsGlobal[label] = meshCentroid;
-                        musclesInterVolumeGlobal[label] = volume;
 
                         // ----- Activation indicator outline of muscles -----------------
                         var outlineMaterial = new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.BackSide});
@@ -234,6 +132,7 @@ class MuscleBonesConstraints {
                         outlineMusclePhy.scale.multiplyScalar(1.005);
                         outlineMusclePhy.name = "outline_" + label;
 
+                        // Add also the outline to radius phy bone
                         radi.add(outlineMusclePhy);
                         //--------------------------------------------
 
@@ -379,9 +278,6 @@ class MuscleBonesConstraints {
         meshPhy.setDamping(0.99, 0.99);
         return meshPhy
     }
-
-
-
 
     /** ==============================
      * Add a sphere
@@ -674,171 +570,5 @@ class MuscleBonesConstraints {
 
         this.objPalmReflectorOut = this.setBonePosAndRot('palmcubeout', new THREE.Vector3(0, 12, 10));
         this.objThirdmetacarpal.add(this.objPalmReflectorOut);
-
-
     }
 }
-
-//--------------------- OBSOLETE ------------------------------------
-
-//////-------- Scaphoid -------
-////var objScaphoid = getObjByNameB(rbonesObjs, 'scaphoid');
-////scene.add(objScaphoid);
-////
-////setBoneToPosAndConstraint(objScaphoid, objRadius, new THREE.Vector3(515, 611, 998), // Position
-////                                new THREE.Vector3(1.5 * M_PI, -0.2*M_PI , M_PI), // Rotation
-////                                new THREE.Vector3(515, 615, 998), //   Constraint
-////                                carpialHingeL,  //   ConstraintLimitsUpper
-////                                -carpialHingeL,  //   ConstraintLimitsLower
-////                                'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-////////-------- lunate -------
-////var objLunate = getObjByNameB(rbonesObjs, 'lunate');
-////scene.add(objLunate);
-////
-////setBoneToPosAndConstraint(objLunate, objUlna, new THREE.Vector3(535, 612, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, -0.2*M_PI , M_PI), // Rotation
-////    new THREE.Vector3(535, 617, 1000), //   Constraint
-////    carpialHingeL, -carpialHingeL, 'hinge', new THREE.Vector3(1,0,0), 0x0000ff);
-////
-////////////------------- Lunate with Scaphoid constraint --------------
-////plainHingeConstraint(objLunate, objScaphoid,
-////    new THREE.Vector3(525, 610, 1000), //   Constraint
-////    carpialHingeL, -carpialHingeL, 0x0000ff, new THREE.Vector3(0, 1, 0));
-////
-////plainHingeConstraint(objUlna, objRadius,
-////    new THREE.Vector3(525, 630, 1000), //   Constraint
-////    carpialHingeL*4, -carpialHingeL*4, 0x0000ff, new THREE.Vector3(0, 1, 0));
-////
-//////////////------- Capitate -------------------------------
-////var objCapitate = getObjByNameB(rbonesObjs, 'capitate');
-////scene.add(objCapitate);
-////
-////setBoneToPosAndConstraint(objCapitate, objScaphoid, new THREE.Vector3(523, 600, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(531, 603, 1000), //   Constraint
-////    carpialHingeL,  //   ConstraintLimitsUpper
-////    -carpialHingeL,  //   ConstraintLimitsUpper
-////    'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-////////------------ Capitate to Lunate constraint --------------------------------------
-////plainHingeConstraint(objCapitate, objLunate,
-////    new THREE.Vector3(515, 603, 1000), //   Constraint
-////    carpialHingeL,  //   ConstraintLimitsUpper
-////    -carpialHingeL,  //   ConstraintLimitsUpper
-////    0x0000ff, new THREE.Vector3(1, 0, 0)
-////);
-////
-//////////------- Trapezoid -------------------------------
-////var objTrapezoid = getObjByNameB(rbonesObjs, 'trapezoid');
-////scene.add(objTrapezoid);
-////
-////setBoneToPosAndConstraint(objTrapezoid, objScaphoid, new THREE.Vector3(510, 595, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(512, 598, 1000), 0, 0, 'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-//////
-////////------------ Trapezoid to Capitate constraint ------------------
-////plainHingeConstraint( objTrapezoid, objCapitate ,
-////    new THREE.Vector3(517, 593, 1000), //   Constraint
-////    carpialHingeL, -carpialHingeL, 0x0000ff, new THREE.Vector3(0, 1, 0)
-////);
-////
-////
-////
-////
-////
-//////////------- Trapezium -------------------------------ssss
-////var objTrapezium = getObjByNameB(rbonesObjs, 'trapezium');
-////scene.add(objTrapezium);
-////
-////setBoneToPosAndConstraint(objTrapezium, objScaphoid, new THREE.Vector3(490, 585, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI,  0, 0*M_PI), // Rotation
-////    new THREE.Vector3(500, 600, 1000), 0, 0, 'hinge', new THREE.Vector3(1, 1, 1), 0x00ffff
-////);
-////
-////////------ Trapezium to Trapezoid constraint ------------
-////plainHingeConstraint( objTrapezoid, objTrapezium ,
-////    new THREE.Vector3(501, 589, 1000), 0, 0, 0xff00ff, new THREE.Vector3(0, 1, 0)
-////);
-////
-////
-////
-////////////---------- Hamate -------------------------------
-////var objHamate = getObjByNameB(rbonesObjs, 'hamate');
-////scene.add(objHamate);
-////
-////setBoneToPosAndConstraint(objHamate, objLunate, new THREE.Vector3(537, 595, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(538, 605, 1000), //   Constraint
-////    carpialHingeL,
-////    -carpialHingeL,
-////    'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-////////-------- Hamate to Capitate constraint ------------------
-////plainHingeConstraint( objHamate, objCapitate,
-////    new THREE.Vector3(530, 593, 1000), //   Constraint
-////    0.1,
-////    -0.1,
-////    0x0000ff, new THREE.Vector3(0, 1, 0)
-////);
-////
-////////
-//////////---------- Triquetral  -------------------------------
-////var objTriquetral = getObjByNameB(rbonesObjs, 'triquetral');
-////scene.add(objTriquetral);
-////
-////setBoneToPosAndConstraint(objTriquetral, objLunate, new THREE.Vector3(545, 602, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(542, 609, 1000), //   Constraint
-////    carpialHingeL,
-////    -carpialHingeL,
-////    'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-////////-------- Triquetral to Hamate constraint ------------------
-////plainHingeConstraint( objTriquetral, objHamate,
-////    new THREE.Vector3(542, 597, 1000), //   Constraint
-////    carpialHingeL,
-////    -carpialHingeL,
-////    0x0000ff, new THREE.Vector3(0, 1, 0)
-////);
-////
-//////
-//////////---------- Pisiform  -------------------------------
-////var objPisiform = getObjByNameB(rbonesObjs, 'pisiform');
-////scene.add(objPisiform);
-////
-////setBoneToPosAndConstraint(objPisiform, objTriquetral, new THREE.Vector3(545, 600, 988), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(542, 600, 992), //   Constraint
-////    carpialHingeL,
-////    -carpialHingeL,
-////    'hinge', new THREE.Vector3(1,0,0), 0x0000ff
-////);
-////
-
-
-//this.setHingeConstraint(objThirdmetacarpal, objCapitate, new THREE.Vector3(525, 586, 1000), 0, 0, new THREE.Vector3(1,0,0));
-//setBoneToPosAndConstraint(objSecondmetacarpal, objTrapezoid, new THREE.Vector3(510, 552, 1000), // Position
-//    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-//    new THREE.Vector3(510, 590, 1000), 0, 0, 'hinge', 'x', 0x0000ff);
-////setBoneToPosAndConstraint(objFirstmetacarpal, objTrapezium, new THREE.Vector3(490, 560, 1000), // Position
-////    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-////    new THREE.Vector3(490, 588, 1000), //   Constraint
-////    0, 0, 'hinge', 'x', 0x0000ff
-//setBoneToPosAndConstraint(objFourthmetacarpal, objHamate, new THREE.Vector3(537, 555, 1000), // Position
-//    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-//    new THREE.Vector3(537, 585, 1000), //   Constraint
-//    0, 0, 'hinge', 'x', 0x0000ff
-//);
-
-//setBoneToPosAndConstraint(objFifthmetacarpal, objHamate, new THREE.Vector3(548, 561, 1000), // Position
-//    new THREE.Vector3(1.5 * M_PI, 0 , M_PI), // Rotation
-//    new THREE.Vector3(548, 589, 1000), //   Constraint
-//    0, 0, 'hinge', 'x', 0x0000ff
-//);

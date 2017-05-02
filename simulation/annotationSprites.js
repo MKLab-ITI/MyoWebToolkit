@@ -1,32 +1,22 @@
 
 
 //===============  MUSCLES SPRITES ================
-function showMuscleLabelSprite(scene, object, spriteLabelMuscles, meshCentroid, centerOfBones, volume){
-
-
+function showMuscleLabelSprite(object, meshCentroid, volume){
 
     label = getObjLabel(object);
-    
-    //// Sprite
-    //spriteLabelMuscles[i] = makeTextSprite( " "  + label +  " ", volume/1000 + " cm" + "\u00B3 " , {fontsize: 10, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor: {r:250, g:250, b:250, a:0.8}} );
-    //
-    //spriteLabelMuscles[i].position.set(meshCentroid.x + 0.2*(meshCentroid.x-centerOfBones.x), meshCentroid.y + 0.2*(meshCentroid.y-centerOfBones.y), meshCentroid.z+30);
-    //
-    //scene.add( spriteLabelMuscles[i]  );
-    //
-    //// Connection line
-    //
-    //var geometry = new THREE.Geometry();
-    //geometry.vertices.push(
-    //   spriteLabelMuscles[i].position,
-    //   meshCentroid
-    //);
-    //
-    //var line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0x000000}) );
-    //
-    //scene.add( line );
-    
-    return label;
+
+    var spriteLabelMuscle = makeTextSpriteSingleLine( " "  + label +  " ",
+        {fontsize: 10, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor: {r:250, g:250, b:250, a:0.8}});
+
+    // var spriteLabelMuscle = makeTextSprite( " "  + label +  " ",
+    //                                         volume/1000 + " cm" + "\u00B3 " ,
+    //     {fontsize: 10, borderColor: {r:0, g:0, b:0, a:1.0}, backgroundColor: {r:250, g:250, b:250, a:0.8}} );
+
+    spriteLabelMuscle.position.set(meshCentroid.x,
+                                   meshCentroid.y,
+                                   meshCentroid.z + 10);
+
+    return [spriteLabelMuscle, label];
 }
 
 // ================ Bones ===================================
