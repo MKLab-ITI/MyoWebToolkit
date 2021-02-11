@@ -6,14 +6,15 @@
 </a>
 </td>
 <td>
-<img src="https://raw.githubusercontent.com/MKLab-ITI/MyoWebToolkit/master/docs/imageScreenRecording.png" width="512">
+<!-- <img src="https://raw.githubusercontent.com/MKLab-ITI/MyoWebToolkit/master/docs/imageScreenRecording.png" width="512"> -->
 </td>
 </tr>
 <tr><td>
-<a href="http://augreal.mklab.iti.gr/MyoWebToolkit/index.html" >Live demo simulation</a>
+Live demo simulation <a href="https://myowebtoolkit.iti.gr" >https://myowebtoolkit.iti.gr</a> <br />
+ A Myo device is required. Otherwise use W,A,S,D keys just to move the shoulder join (not activating the muscles).
 </td>
 <td>
-<a href="http://augreal.mklab.iti.gr:3000">Live demo recording</a>
+<!-- <a href="http://augreal.mklab.iti.gr:3000">Live demo recording</a> -->
 </td>
 <tr>
 </table>
@@ -36,12 +37,12 @@
 2. Requirements
 
     - Server
-         You need both Apache server and Node.js server
-         - Download XAMPP
-         - Download Node.js
+          You will need:
+         - Apache server, e.g. XAMPP, for the Muscle simulator module
+         - Apache and Node.js for the recording module
 
     - Client
-         - You need a Chrome browser
+         - You need a Chrome or Firefox browser
          - You need a Myo device
 
 
@@ -50,9 +51,11 @@
     Server:
     - Copy everything to a path visible to web or your local client
     - Install Apache server and run it
+    
+    For remote recording also:
     - Install Node.js server and run "StartNodeServer.bat"
     
-3. How to use?
+3. How check installation?
 
     - Simulation
         - Wear Myo 
@@ -117,8 +120,3 @@ corresponding to project i-Treasures, “Intangible Treasures
 \- Capturing the Intangible Cultural Heritage and
 Learning the Rare Know-How of Living Human Treasures”,
 http://i-treasures.eu.
-
-and currently: 
-
-This work is part of the ENVISAGE project that has received funding from the European Union’s Horizon 2020 research and innovation programme under grant agreement No 731900. http://www.envisage-h2020.eu/
-
